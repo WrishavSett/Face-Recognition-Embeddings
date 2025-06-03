@@ -1,7 +1,9 @@
 opencv-python
 insightface
-pinecone-client
+pinecone
 numpy
 matplotlib
 onnxruntime
 #onnxruntime-gpu
+elevenlabs
+TTS
