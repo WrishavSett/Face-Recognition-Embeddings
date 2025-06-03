@@ -50,9 +50,9 @@ def main():
                     else:
                         label = f"Unknown"
                 else:
-                    label = "Unknown"
+                    label = f"Unknown"
             except Exception as e:
-                label = f"Error: {str(e)}"
+                label = f"[ERROR] {str(e)}"
 
             # Draw bounding box and label
             color = (0, 255, 0) if label != "Below Threshold" else (0, 0, 255)
@@ -68,3 +68,6 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()

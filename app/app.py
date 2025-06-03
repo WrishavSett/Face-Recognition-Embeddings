@@ -5,7 +5,7 @@ from insightface.app import FaceAnalysis
 from pinecone import Pinecone
 
 def query_face_embedding():
-    query = input("Enter query image path: ")
+    query = input("[INPUT] Enter query image path: ")
 
     QUERY_IMAGE_PATH = query
     PINECONE_API_KEY = "pcsk_55iQ62_GvUCSHpRXAhy566mkXebjbFxSfe68aPWbZH2T93kboKuFLYy9tZwCotgAbbS8iM"
@@ -24,7 +24,7 @@ def query_face_embedding():
         img = cv2.imread(image_path)
         faces = app.get(img)
         if not faces:
-            raise ValueError("No face detected in query image.")
+            raise ValueError("[ERROR] No face detected in query image.")
         return faces[0].embedding, img
 
     try:
@@ -46,9 +46,9 @@ def query_face_embedding():
             include_metadata=True
         )
 
-        print("\n[RESULTS] Top matches:")
+        print("\n[OUTPUT] Top matches:")
         if not results.matches:
-            print("No matches found.")
+            print("[ERROR] No matches found.")
             return 0
         else:
             for match in results.matches:
@@ -58,10 +58,10 @@ def query_face_embedding():
                 score = top_match.score
                 if score >= SIMILARITY_THRESHOLD:
                     uid = top_match.metadata['uid']
-                    print(f"UID: {uid} | Score: {score:.4f}")
+                    print(f"[OUTPUT] UID: {uid} | Score: {score:.4f}")
                     return uid
                 else:
-                    print(f"No matches found.")
+                    print(f"[ERROR] No matches found.")
                     return 0
     except Exception as e:
         print(f"[ERROR] An error occurred: {str(e)}")
@@ -72,10 +72,10 @@ def get_name():
     from utils import get_name
     if uid:
         name = get_name(uid)
-        print(f"Name: {name}")
+        print(f"[OUTPUT] Name: {name}")
         return name
     else:
-        print("No valid UID found.")
+        print("[ERROR] No valid UID found.")
         return None
 
 def greet_user():
@@ -84,6 +84,6 @@ def greet_user():
     if uid:
         generate_voice(uid)
     else:
-        print("No valid UID found. Cannot generate greeting voice.")
+        print("[ERROR] No valid UID found. Cannot generate greeting voice.")
 
 greet_user()

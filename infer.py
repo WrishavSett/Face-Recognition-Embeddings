@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from insightface.app import FaceAnalysis
 from pinecone import Pinecone
 
-query = input("Enter query image path: ")
+query = input("[INPUT] Enter query image path: ")
 
 QUERY_IMAGE_PATH = query
 PINECONE_API_KEY = "pcsk_55iQ62_GvUCSHpRXAhy566mkXebjbFxSfe68aPWbZH2T93kboKuFLYy9tZwCotgAbbS8iM"
@@ -21,7 +21,7 @@ def extract_embedding(image_path):
     img = cv2.imread(image_path)
     faces = app.get(img)
     if not faces:
-        raise ValueError("No face detected in query image.")
+        raise ValueError("[ERROR] No face detected in query image.")
     return faces[0].embedding, img
 
 try:
@@ -42,10 +42,10 @@ results = index.query(
     include_metadata=True
 )
 
-print("\n[RESULTS] Top matches:")
+print("\n[OUTPUT] Top matches:")
 if not results.matches:
-    print("No matches found.")
+    print("[ERROR ]No matches found.")
 else:
     for match in results.matches:
         metadata = match.metadata
-        print(f"- UID: {metadata['uid']} | Image: {metadata['image_name']} | Score: {match.score:.4f}")
+        print(f"[OUTPUT] UID: {metadata['uid']} | Image: {metadata['image_name']} | Score: {match.score:.4f}")

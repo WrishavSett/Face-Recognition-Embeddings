@@ -62,7 +62,7 @@ to_upsert = []
 for item in image_data_list:
     embedding = extract_embedding(item["path"])
     if embedding is None:
-        print(f"[WARNING] No face detected in {item['path']}")
+        print(f"[ERROR] No face detected in {item['path']}")
         continue
 
     vector_id = str(uuid.uuid4())
