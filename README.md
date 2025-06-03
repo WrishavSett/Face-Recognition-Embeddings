@@ -38,8 +38,8 @@ face_recognition_realtime/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/face_recognition_realtime.git
-cd face_recognition_realtime
+git clone https://github.com/WrishavSett/Face-Recognition-Embeddings.git
+cd Face-Recognition-Embeddings
 ```
 
 ### 2. Install the Package
