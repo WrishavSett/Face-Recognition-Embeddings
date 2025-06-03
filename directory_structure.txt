@@ -1,0 +1,39 @@
+[face-recognition]
+    .gitignore
+    directory_structure.txt
+    infer.py
+    README.md
+    requirements.txt
+    setup.py
+    train.py
+    [.env]
+    [app]
+        app.py
+        main.py
+        test.py
+        utils.py
+    [datasets]
+        [AIML and DA]
+            [test]
+                [TNU2020021100001]
+                [TNU2020021100002]
+                [TNU2020021100004]
+                [TNU2020021100005]
+                [TNU2020021100006]
+            [train]
+                [TNU2020021100001]
+                [TNU2020021100002]
+                [TNU2020021100004]
+                [TNU2020021100005]
+                [TNU2020021100006]
+            [validate]
+                [TNU2020021100001]
+                [TNU2020021100002]
+                [TNU2020021100004]
+                [TNU2020021100005]
+                [TNU2020021100006]
+    [helper]
+        cambria.ttc
+        test.mp4
+    [temp]
+        Wrishav Sett.mp3

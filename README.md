@@ -1,186 +1,137 @@
 
-# Real-Time Face Recognition with InsightFace and Pinecone
+# Face Recognition Embeddings
 
-A real-time facial recognition system built using [InsightFace](https://github.com/deepinsight/insightface) for face detection and feature extraction, and [Pinecone](https://www.pinecone.io/) as a vector similarity search engine to identify individuals from a known database.
-
-This project captures live webcam frames, extracts 512-d face embeddings using a pre-trained ArcFace model, and performs real-time identity matching against a Pinecone vector index.
+A modular, end-to-end system for facial recognition using facial embeddings, vector search with Pinecone, and real-time/video inference. This project leverages deep learning-based face embeddings (via InsightFace) to identify individuals based on facial similarity, with additional features like voice-based greetings.
 
 ---
 
-## 🔍 Features
+## 🧱 Project Structure
 
-- 📸 Real-time face detection and recognition via webcam
-- 🤖 High-performance ArcFace model (`buffalo_l`) via InsightFace
-- 🌐 Vector similarity search using Pinecone (cosine distance)
-- 🎯 Accurate face matching with configurable thresholds
-- 🚦 "Unknown" tagging for unrecognized faces
-- 🖥️ GPU/CPU support (configurable)
-- ✅ Easy to install and run with a single command
-
----
-
-## 🗂️ Project Structure
-
-```
-face_recognition_realtime/
-├── face_recognition_app/
-│   ├── __init__.py
-│   └── main.py              # ← Real-time inferencing logic
-├── requirements.txt         # ← Dependencies
-├── setup.py                 # ← Packaging and CLI entrypoint
-└── README.md                # ← This file
-```
-
----
-
-## 📦 Installation
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/WrishavSett/Face-Recognition-Embeddings.git
-cd Face-Recognition-Embeddings
-```
-
-### 2. Install the Package
-
-> Ensure Python 3.7+ is installed in your environment.
-
-```bash
-pip install .
+```plaintext
+face-recognition/
+├── .gitignore
+├── README.md
+├── requirements.txt
+├── train.py                # Embedding extraction & indexing in Pinecone
+├── infer.py                # Image-based face matching
+├── setup.py
+├── directory_structure.txt
+├── app/
+│   ├── app.py             # App-style interface for greeting and name lookup
+│   ├── main.py            # Real-time webcam-based face recognition
+│   ├── test.py            # Video file processing with recognition
+│   └── utils.py           # Utilities: UID-name mapping, greeting audio
+├── datasets/
+│   └── AIML and DA/
+│       ├── train/         # Training images (folders per person)
+│       ├── test/          # Test set (same UID folders)
+│       └── validate/      # Validation set (same UID folders)
+├── helper/
+│   ├── cambria.ttc        # Font for video overlays
+│   └── test.mp4           # Sample input video
+└── temp/
+    └── *.mp3              # Output voice greetings
 ```
 
 ---
 
-## 🚀 Running the Application
+## 📦 Requirements
 
-### Prerequisite
-Before you run the app, ensure you:
-- Have already uploaded face embeddings to Pinecone from your training dataset.
-- Have your Pinecone API Key and Region.
-- Replace the placeholder Pinecone API key in `face_recognition_app/main.py`.
-
-### Run the real-time recognition app:
-
-```bash
-realtime-face-search
-```
-
-The app will:
-- Open your default webcam
-- Detect faces in real-time
-- Match them against your Pinecone vector index
-- Display UID and match score on screen
-
-Press `q` to quit the stream.
-
----
-
-## ⚙️ Configuration
-
-Edit the `main()` function in `main.py` to customize parameters:
-
-```python
-PINECONE_API_KEY = "your-pinecone-api-key"
-PINECONE_REGION = "us-east-1"
-INDEX_NAME = "aiml-da-face-embeds"
-TOP_K = 1
-SIMILARITY_THRESHOLD = 0.5
-USE_GPU = 0  # Use -1 for CPU
-```
-
----
-
-## 📋 Example Output
-
-When a face is detected and recognized, the display shows:
-
-```
-[INFO] Detected: uid123 (0.87)
-```
-
-If the similarity score is below the threshold:
-
-```
-[INFO] Detected: Unknown
-```
-
----
-
-## 🛠️ Dependencies
-
-These are handled via `setup.py` but listed here for clarity:
-
-- `insightface`
-- `opencv-python`
-- `pinecone-client`
-- `numpy`
-- `matplotlib`
-
-Install manually if needed:
+Install all Python dependencies via:
 
 ```bash
 pip install -r requirements.txt
 ```
 
+### Required Dependencies:
+
+- `opencv-python`
+- `insightface`
+- `pinecone-client`
+- `numpy`
+- `matplotlib`
+- `onnxruntime` or `onnxruntime-gpu`
+
+> ℹ️ Make sure to have access to a **Pinecone account** and **ElevenLabs API key** (for voice greetings). These keys should be stored securely (e.g., using a `.env` file).
+
 ---
 
-## 🧠 Notes
+## 🚀 How It Works
 
-- Ensure your Pinecone index is **created and populated** before running real-time inference.
-- This app only displays the **most similar** (`top_k=1`) match for each detected face.
-- For multiple faces, the system processes all detected faces independently.
-- You can use a GPU for faster processing if `USE_GPU=0` and your environment supports it.
-
----
-
-## 🔒 Security
-
-Avoid hardcoding secrets (e.g., API keys). You can use environment variables for production use:
+### 1. **Face Embedding Generation & Indexing**
+Run `train.py` to:
+- Load all training images from the `datasets/AIML and DA/train` directory.
+- Detect faces using `insightface`.
+- Extract 512-dimensional embeddings.
+- Upload them to **Pinecone**, a vector database, along with metadata (UID, image name).
 
 ```bash
-export PINECONE_API_KEY="your-secret-key"
-```
-
-And update the code accordingly:
-
-```python
-import os
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+python train.py
 ```
 
 ---
 
-## 📈 Future Enhancements
+### 2. **Query via Image**
+Run `infer.py` to:
+- Load an input image.
+- Extract face embedding.
+- Query Pinecone for top similar faces.
+- Display UID, image name, and similarity score.
 
-- Face recognition for groups or crowds
-- Logging and report generation
-- Web dashboard using Streamlit or Flask
-- Dockerization for platform-independent deployments
-
----
-
-## 🤝 Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+```bash
+python infer.py
+```
 
 ---
 
-## 📜 License
+### 3. **Application Workflow**
+The `app/` folder contains modular scripts for enhanced use cases:
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+#### ✅ `app.py`
+- Accepts a query image path.
+- Retrieves the most similar UID from Pinecone.
+- Maps UID → Name using a hardcoded dictionary.
+- Greets the user with a personalized audio message using **ElevenLabs TTS**.
+
+#### ✅ `main.py`
+- Activates your webcam.
+- Detects and recognizes faces in real-time.
+- Displays bounding boxes and UID labels.
+
+#### ✅ `test.py`
+- Processes a video file (`test.mp4`).
+- Annotates recognized faces and FPS.
+- Saves output to `output.mp4`.
 
 ---
 
-## 🙌 Acknowledgements
+### 4. **Name & Audio Utilities**
+The `utils.py` file provides:
+- UID to name mapping (`get_name`)
+- Time-aware greetings
+- Text-to-speech greeting generator (`generate_voice`)
 
-- [InsightFace](https://github.com/deepinsight/insightface) for facial feature extraction
-- [Pinecone](https://www.pinecone.io/) for fast and scalable vector search
+---
+
+## 🔐 API Keys & Security
+
+This project uses:
+- **Pinecone API key** for embedding search
+- **ElevenLabs API key** for voice synthesis
+
+> ⚠️ Keys are hardcoded in the codebase. **Please replace them with environment variables and load via `.env` for production or public use.**
 
 ---
 
-## 👤 Author
+## ✨ Future Improvements
 
-**Wrishav** – [GitHub](https://github.com/yourusername)
+- Add a REST API using FastAPI or Flask.
+- Store UID-name mappings in a database.
+- Add a web interface for registration and querying.
+- Dockerize for deployment.
 
 ---
+
+## 📬 Contact
+
+Developed by [Wrishav Sett](https://github.com/WrishavSett)
