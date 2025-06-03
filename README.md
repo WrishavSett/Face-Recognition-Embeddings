@@ -50,7 +50,7 @@ pip install -r requirements.txt
 - `pinecone-client`
 - `numpy`
 - `matplotlib`
-- `onnxruntime` or `onnxruntime-gpu`
+- `onnxruntime` for CPU or `onnxruntime-gpu` for GPU
 
 > ℹ️ Make sure to have access to a **Pinecone account** and **ElevenLabs API key** (for voice greetings). These keys should be stored securely (e.g., using a `.env` file).
 
