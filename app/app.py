@@ -67,4 +67,23 @@ def query_face_embedding():
         print(f"[ERROR] An error occurred: {str(e)}")
         return 0
     
-query_face_embedding()
+def get_name():
+    uid = query_face_embedding()
+    from utils import get_name
+    if uid:
+        name = get_name(uid)
+        print(f"Name: {name}")
+        return name
+    else:
+        print("No valid UID found.")
+        return None
+
+def greet_user():
+    from utils import generate_voice
+    uid = query_face_embedding()
+    if uid:
+        generate_voice(uid)
+    else:
+        print("No valid UID found. Cannot generate greeting voice.")
+
+greet_user()
