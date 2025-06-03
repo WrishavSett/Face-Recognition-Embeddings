@@ -35,6 +35,8 @@ def generate_voice(uid):
     text = create_greeting(uid)
     name = get_name(uid)
 
+    print(f"[INFO] Generating voice for UID: {uid} with name: {name}")
+
     if text is None:
         text = "Hello, this is a test of the ElevenLabs text-to-speech service."
 
