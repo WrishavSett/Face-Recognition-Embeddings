@@ -48,7 +48,7 @@ def generate_voice(uid):
     )
 
     # Save the audio content to a file
-    with open(f"./temp/{name}.mp3", "wb") as f:
+    with open(f"../temp/{name}.mp3", "wb") as f:
         for chunk in response:
             f.write(chunk)
     print(f"[INF0] Audio successfully saved to {name}.mp3")
