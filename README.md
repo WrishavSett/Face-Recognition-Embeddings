@@ -1,137 +1,208 @@
+# 🧠 Face Recognition with Pinecone & Audio Greetings
 
-# Face Recognition Embeddings
-
-A modular, end-to-end system for facial recognition using facial embeddings, vector search with Pinecone, and real-time/video inference. This project leverages deep learning-based face embeddings (via InsightFace) to identify individuals based on facial similarity, with additional features like voice-based greetings.
+A modular, real-time face recognition system using deep-learning embeddings (via InsightFace), Pinecone vector search, and personalized voice greetings with ElevenLabs. This project also includes attendance-like logging and time-aware greeting behavior.
 
 ---
 
-## 🧱 Project Structure
+## 📁 Updated Project Structure
 
 ```plaintext
 face-recognition/
-├── .gitignore
 ├── README.md
 ├── requirements.txt
 ├── train.py                # Embedding extraction & indexing in Pinecone
-├── infer.py                # Image-based face matching
-├── setup.py
-├── directory_structure.txt
+├── infer.py                # Image-based face query
 ├── app/
-│   ├── app.py             # App-style interface for greeting and name lookup
-│   ├── main.py            # Real-time webcam-based face recognition
-│   ├── test.py            # Video file processing with recognition
-│   └── utils.py           # Utilities: UID-name mapping, greeting audio
+│   ├── final.py           # Full video-based recognition + greeting logic
+│   ├── headless.py        # Lightweight video processing (no audio)
+│   ├── kokoroVoice.py     # (Experimental) Kokoro TTS integration
+│   ├── main.py            # Real-time webcam recognition
+│   ├── test.py            # CLI: image-based UID+greeting
+│   ├── track.py           # UID detection and logging dictionary
+│   └── utils.py           # UID-name mapping, greeting generation, TTS
 ├── datasets/
 │   └── AIML and DA/
-│       ├── train/         # Training images (folders per person)
-│       ├── test/          # Test set (same UID folders)
-│       └── validate/      # Validation set (same UID folders)
+│       ├── train/
+│       ├── test/
+│       └── validate/
 ├── helper/
-│   ├── cambria.ttc        # Font for video overlays
+│   ├── cambria.ttc        # Font used in video overlays
 │   └── test.mp4           # Sample input video
 └── temp/
-    └── *.mp3              # Output voice greetings
+    └── *.mp3              # Generated audio greetings
 ```
 
 ---
 
-## 📦 Requirements
+## ⚙️ Requirements & Installation
 
-Install all Python dependencies via:
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Required Dependencies:
+Recommended Python: `>=3.8`
+
+### Key Libraries
 
 - `opencv-python`
 - `insightface`
 - `pinecone-client`
-- `numpy`
-- `matplotlib`
-- `onnxruntime` for CPU or `onnxruntime-gpu` for GPU
-
-> ℹ️ Make sure to have access to a **Pinecone account** and **ElevenLabs API key** (for voice greetings). These keys should be stored securely (e.g., using a `.env` file).
+- `elevenlabs`
+- `onnxruntime` or `onnxruntime-gpu`
+- `numpy`, `PIL`, `matplotlib`, `playsound`, `soundfile`
 
 ---
 
-## 🚀 How It Works
+## 🔐 API Keys & Environment Variables
 
-### 1. **Face Embedding Generation & Indexing**
-Run `train.py` to:
-- Load all training images from the `datasets/AIML and DA/train` directory.
-- Detect faces using `insightface`.
-- Extract 512-dimensional embeddings.
-- Upload them to **Pinecone**, a vector database, along with metadata (UID, image name).
+**Create a `.env` file** at the root:
+
+```bash
+PINECONE_API_KEY=your_pinecone_key
+ELEVENLABS_API_KEY=your_elevenlabs_key
+```
+
+Update your code to load them:
+
+```python
+from dotenv import load_dotenv
+load_dotenv()
+import os
+api_key = os.getenv("PINECONE_API_KEY")
+```
+
+---
+
+## 🚀 Core Functionality
+
+### 🔧 1. Train Embeddings
 
 ```bash
 python train.py
 ```
 
+- Loads images from `datasets/AIML and DA/train/`
+- Detects faces and generates 512-D embeddings
+- Indexes embeddings in Pinecone with metadata (UID, filename)
+
 ---
 
-### 2. **Query via Image**
-Run `infer.py` to:
-- Load an input image.
-- Extract face embedding.
-- Query Pinecone for top similar faces.
-- Display UID, image name, and similarity score.
+### 🖼️ 2. Query via Image (CLI)
 
 ```bash
-python infer.py
+python app/test.py
 ```
 
----
-
-### 3. **Application Workflow**
-The `app/` folder contains modular scripts for enhanced use cases:
-
-#### ✅ `app.py`
-- Accepts a query image path.
-- Retrieves the most similar UID from Pinecone.
-- Maps UID → Name using a hardcoded dictionary.
-- Greets the user with a personalized audio message using **ElevenLabs TTS**.
-
-#### ✅ `main.py`
-- Activates your webcam.
-- Detects and recognizes faces in real-time.
-- Displays bounding boxes and UID labels.
-
-#### ✅ `test.py`
-- Processes a video file (`test.mp4`).
-- Annotates recognized faces and FPS.
-- Saves output to `output.mp4`.
+- Prompts for a local image path
+- Displays top matching UID and name
+- Greets the user with generated voice (via ElevenLabs)
 
 ---
 
-### 4. **Name & Audio Utilities**
-The `utils.py` file provides:
-- UID to name mapping (`get_name`)
-- Time-aware greetings
-- Text-to-speech greeting generator (`generate_voice`)
+### 🎥 3. Video File Recognition + Greeting
+
+```bash
+python app/final.py
+```
+
+- Loads a video from `helper/test.mp4`
+- Detects and identifies faces
+- Greets recognized users with time-aware messages
+- Logs their arrival and departure
+- Overlays bounding boxes and FPS
+- Saves output to `helper/output.mp4`
 
 ---
 
-## 🔐 API Keys & Security
+### 🧪 4. Headless Inference (Lightweight)
 
-This project uses:
-- **Pinecone API key** for embedding search
-- **ElevenLabs API key** for voice synthesis
+```bash
+python app/headless.py
+```
 
-> ⚠️ Keys are hardcoded in the codebase. **Please replace them with environment variables and load via `.env` for production or public use.**
+- Same as `final.py` but skips audio generation
+- Good for quick face tracking in videos
 
 ---
 
-## ✨ Future Improvements
+### 📸 5. Real-Time Webcam Recognition
 
-- Add a REST API using FastAPI or Flask.
-- Store UID-name mappings in a database.
-- Add a web interface for registration and querying.
-- Dockerize for deployment.
+```bash
+python app/main.py
+```
+
+- Activates webcam (`cv2.VideoCapture(0)`)
+- Recognizes and labels faces on the fly
+- Press `q` to quit
+
+---
+
+### 🎤 6. Kokoro Voice Synthesis (Optional)
+
+```bash
+python app/kokoroVoice.py
+```
+
+- Uses Kokoro open-weight TTS model to synthesize test audio
+- Experimental – not integrated with the main greeting system
+
+---
+
+## 🧠 Internals: How Greeting & Tracking Works
+
+- `track.py` maintains two dictionaries: `welcome_dictionary` and `goodbye_dictionary`
+- Each new UID is only greeted once per session
+- Time-based logic (e.g., "Welcome" before 17:45, "Goodbye" after)
+- `generate_voice()` uses ElevenLabs API to generate mp3 greetings
+- `get_name()` maps UIDs to full names using a hardcoded dictionary in `utils.py`
+
+---
+
+## ✅ Future Work
+
+- Replace hardcoded UID-to-name mapping with a database or CSV
+- Add a web-based dashboard with Flask/FastAPI
+- Enable registration of new users from UI
+- Add Docker support
+- Migrate to a secure secrets manager for API keys
+
+---
+
+## 🧑‍💻 Developer Notes
+
+- Models used: `insightface.buffalo_l` for embedding
+- Vector DB: [Pinecone](https://www.pinecone.io/)
+- Text-to-speech: [ElevenLabs](https://www.elevenlabs.io/)
+- Experimental TTS: Kokoro
+
+---
+
+## 🧪 Example Workflow
+
+```bash
+# Step 1: Train and index embeddings
+python train.py
+
+# Step 2: Test with a query image
+python app/test.py
+
+# Step 3: Run real-time recognition
+python app/main.py
+
+OR
+
+# Step 3: Process recorded video with complete time-based greeting logic
+python app/final.py
+```
 
 ---
 
 ## 📬 Contact
 
 Developed by [Wrishav Sett](https://github.com/WrishavSett)
+
+> ⚠️ For production, **remove all hardcoded API keys** and use `.env` + `dotenv`.
+
+---
