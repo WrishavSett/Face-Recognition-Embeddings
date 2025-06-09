@@ -1,7 +1,8 @@
 import os
 from elevenlabs import ElevenLabs
 import datetime
-
+from dotenv import load_dotenv
+load_dotenv()
 
 def get_name(uid):
     name_dict = {
@@ -29,7 +30,7 @@ def get_name(uid):
 
 def generate_voice(uid):
     client = ElevenLabs(
-        api_key="sk_e1c736d567dd9acde67a8661ff4eafe217d979d8fa574063"
+        api_key=os.getenv("ELEVENLABS_API_KEY"),
         )
     
     text = create_greeting(uid)

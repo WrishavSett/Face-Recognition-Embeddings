@@ -3,11 +3,14 @@ import cv2
 import matplotlib.pyplot as plt
 from insightface.app import FaceAnalysis
 from pinecone import Pinecone
+from dotenv import load_dotenv
+
+load_dotenv()
 
 query = input("[INPUT] Enter query image path: ")
 
 QUERY_IMAGE_PATH = query
-PINECONE_API_KEY = "pcsk_55iQ62_GvUCSHpRXAhy566mkXebjbFxSfe68aPWbZH2T93kboKuFLYy9tZwCotgAbbS8iM"
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_REGION = "us-east-1"
 INDEX_NAME = "aiml-da-face-embeds"
 TOP_K = 5  # Number of top results to return

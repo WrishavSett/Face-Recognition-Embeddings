@@ -3,13 +3,16 @@ import cv2
 import time
 import numpy as np
 from pinecone import Pinecone
+from dotenv import load_dotenv
 from playsound import playsound
 from track import add_to_dictionary
 from insightface.app import FaceAnalysis
 from PIL import ImageFont, ImageDraw, Image
 from utils import get_name, generate_voice, get_current_time
 
-PINECONE_API_KEY = "pcsk_55iQ62_GvUCSHpRXAhy566mkXebjbFxSfe68aPWbZH2T93kboKuFLYy9tZwCotgAbbS8iM"
+load_dotenv()
+
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_REGION = "us-east-1"
 INDEX_NAME = "aiml-da-face-embeds"
 TOP_K = 1

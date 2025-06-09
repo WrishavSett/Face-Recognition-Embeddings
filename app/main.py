@@ -3,9 +3,12 @@ import os
 from insightface.app import FaceAnalysis
 from pinecone import Pinecone
 import numpy as np
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def main():
-    PINECONE_API_KEY = "pcsk_55iQ62_GvUCSHpRXAhy566mkXebjbFxSfe68aPWbZH2T93kboKuFLYy9tZwCotgAbbS8iM"
+    PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
     PINECONE_REGION = "us-east-1"
     INDEX_NAME = "aiml-da-face-embeds"
     TOP_K = 1
