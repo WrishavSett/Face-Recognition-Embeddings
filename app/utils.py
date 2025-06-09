@@ -65,9 +65,9 @@ def create_greeting(uid):
 
     name = get_name(uid)
 
-    if time > "08:45:00":
+    if time > "08:45:00" and time < "17:45:00":
         greeting = f"Welcome, {name}!"
-    elif time > "17:45:00":
+    elif time > "17:45:00" and time < "23:59:59":
         greeting = f"Goodbye, {name}!"
 
     return greeting

@@ -6,7 +6,7 @@ from pinecone import Pinecone
 from track import add_to_dictionary
 from insightface.app import FaceAnalysis
 from PIL import ImageFont, ImageDraw, Image
-from utils import get_name, get_current_time, create_greeting, generate_voice
+from utils import get_name, generate_voice, get_current_time
 
 PINECONE_API_KEY = "pcsk_55iQ62_GvUCSHpRXAhy566mkXebjbFxSfe68aPWbZH2T93kboKuFLYy9tZwCotgAbbS8iM"
 PINECONE_REGION = "us-east-1"
@@ -15,7 +15,8 @@ TOP_K = 1
 USE_GPU = 0  # Use -1 for CPU
 SIMILARITY_THRESHOLD = 0.5
 
-dictionary = {}
+welcome_dictionary = {}
+goodbye_dictionary = {}
 
 VIDEO_PATH = "../helper/test.mp4"  # Path to your input video
 OUTPUT_VIDEO_PATH = "../helper/output.mp4"
@@ -54,6 +55,7 @@ print(f"[INFO] Processing and saving to: {OUTPUT_VIDEO_PATH}")
 
 while True:
     start_time = time.time()
+    d, t = get_current_time()
 
     ret, frame = cap.read()
     if not ret:
@@ -75,12 +77,22 @@ while True:
                 if score >= SIMILARITY_THRESHOLD:
                     uid = top_match.metadata.get('uid', 'Unknown')
                     label = f"{uid} ({score:.2f})"
-                    exists, dictionary = add_to_dictionary(dictionary, uid)
-                    if exists is False:
-                        print(f"[INFO] New UID detected: {uid}. Adding to dictionary.")
-                        name = get_name(uid)
-                        generate_voice(uid)
-                        print(f"[INFO] Greeting generated for {name} with UID {uid}.")
+                    if t >= "08:45:00" and t < "17:45:00":
+                        exists, welcome_dictionary = add_to_dictionary(welcome_dictionary, uid)
+                        if exists is False:
+                            print(f"[INFO] New UID detected: {uid}. Adding to dictionary.")
+                            name = get_name(uid)
+                            generate_voice(uid)
+                            print(f"[INFO] Welcome message generated for {name} with UID {uid}.")
+                            goodbye_dictionary = {}
+                    elif t >= "17:45:00" and t < "23:59:59":
+                        exists, goodbye_dictionary = add_to_dictionary(goodbye_dictionary, uid)
+                        if exists is False:
+                            print(f"[INFO] New UID detected: {uid}. Adding to dictionary.")
+                            name = get_name(uid)
+                            generate_voice(uid)
+                            print(f"[INFO] Goodbye message generated for {name} with UID {uid}.")
+                            welcome_dictionary = {}
                 else:
                     label = "Unknown"
             else:
@@ -112,4 +124,5 @@ cap.release()
 out.release()
 print(f"[INFO] Video saved to: {OUTPUT_VIDEO_PATH}")
 
-print(dictionary)
+print(welcome_dictionary, goodbye_dictionary)
+print("[INFO] Processing complete. Exiting.")
