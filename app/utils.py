@@ -2,6 +2,7 @@ import os
 from elevenlabs import ElevenLabs
 import datetime
 from dotenv import load_dotenv
+
 load_dotenv()
 
 def get_name(uid):
@@ -49,11 +50,11 @@ def generate_voice(uid):
     )
 
     # Save the audio content to a file
-    with open(f"../temp/{name}.mp3", "wb") as f:
+    with open(f"./temp/{name}.mp3", "wb") as f:
         for chunk in response:
             f.write(chunk)
     print(f"[INF0] Audio successfully saved to {name}.mp3")
-    return f"../temp/{name}.mp3"
+    return f"./temp/{name}.mp3"
 
 def get_current_time():
     now = datetime.datetime.now()
@@ -73,3 +74,5 @@ def create_greeting(uid):
         greeting = f"Goodbye, {name}!"
 
     return greeting
+
+generate_voice("TNU2020021100004")  # Example usage

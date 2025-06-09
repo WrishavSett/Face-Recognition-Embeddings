@@ -22,9 +22,9 @@ SIMILARITY_THRESHOLD = 0.5
 welcome_dictionary = {}
 goodbye_dictionary = {}
 
-VIDEO_PATH = "../helper/test.mp4"  # Path to your input video
-OUTPUT_VIDEO_PATH = "../helper/output.mp4"
-CAMBRIA_FONT_PATH = "../helper/cambria.ttc"  # Adjust for your OS
+VIDEO_PATH = "./helper/test.mp4"  # Path to your input video
+OUTPUT_VIDEO_PATH = "./helper/output.mp4"
+CAMBRIA_FONT_PATH = "./helper/cambria.ttc"  # Adjust for your OS
 
 if not os.path.exists(VIDEO_PATH):
     raise FileNotFoundError(f"[ERROR] Video file not found: {VIDEO_PATH}")
