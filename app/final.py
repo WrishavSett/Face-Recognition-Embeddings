@@ -3,6 +3,7 @@ import cv2
 import time
 import numpy as np
 from pinecone import Pinecone
+from playsound import playsound
 from track import add_to_dictionary
 from insightface.app import FaceAnalysis
 from PIL import ImageFont, ImageDraw, Image
@@ -82,7 +83,8 @@ while True:
                         if exists is False:
                             print(f"[INFO] New UID detected: {uid}. Adding to dictionary.")
                             name = get_name(uid)
-                            generate_voice(uid)
+                            path = generate_voice(uid)
+                            playsound(path)
                             print(f"[INFO] Welcome message generated for {name} with UID {uid}.")
                             goodbye_dictionary = {}
                     elif t >= "17:45:00" and t < "23:59:59":
@@ -90,7 +92,8 @@ while True:
                         if exists is False:
                             print(f"[INFO] New UID detected: {uid}. Adding to dictionary.")
                             name = get_name(uid)
-                            generate_voice(uid)
+                            path = generate_voice(uid)
+                            playsound(path)
                             print(f"[INFO] Goodbye message generated for {name} with UID {uid}.")
                             welcome_dictionary = {}
                 else:

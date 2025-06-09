@@ -52,6 +52,7 @@ def generate_voice(uid):
         for chunk in response:
             f.write(chunk)
     print(f"[INF0] Audio successfully saved to {name}.mp3")
+    return f"../temp/{name}.mp3"
 
 def get_current_time():
     now = datetime.datetime.now()
