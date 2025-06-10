@@ -74,5 +74,3 @@ def create_greeting(uid):
         greeting = f"Goodbye, {name}!"
 
     return greeting
-
-generate_voice("TNU2020021100004")  # Example usage
