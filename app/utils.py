@@ -49,12 +49,14 @@ def generate_voice(uid):
         model_id="eleven_multilingual_v2"
     )
 
+    path = f"./temp/{name}.mp3"
+
     # Save the audio content to a file
-    with open(f"./temp/{name}.mp3", "wb") as f:
+    with open(path, "wb") as f:
         for chunk in response:
             f.write(chunk)
-    print(f"[INF0] Audio successfully saved to {name}.mp3")
-    return f"./temp/{name}.mp3"
+    print(f"[INF0] Audio successfully saved to {path}")
+    return path
 
 def get_current_time():
     now = datetime.datetime.now()
@@ -74,3 +76,12 @@ def create_greeting(uid):
         greeting = f"Goodbye, {name}!"
 
     return greeting
+
+def play_sound(uid):
+    path = generate_voice(uid)
+    try:
+        from playsound import playsound
+        playsound(path)
+    except Exception as e:
+        print(f"[ERROR] Failed to play sound: {e}")
+        raise e

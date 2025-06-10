@@ -4,11 +4,10 @@ import time
 import numpy as np
 from pinecone import Pinecone
 from dotenv import load_dotenv
-from playsound import playsound
 from track import add_to_dictionary
 from insightface.app import FaceAnalysis
 from PIL import ImageFont, ImageDraw, Image
-from utils import get_name, generate_voice, get_current_time
+from utils import get_name, generate_voice, get_current_time, play_sound
 
 load_dotenv()
 
@@ -86,8 +85,7 @@ while True:
                         if exists is False:
                             print(f"[INFO] New UID detected: {uid}. Adding to dictionary.")
                             name = get_name(uid)
-                            path = generate_voice(uid)
-                            playsound(path)
+                            play_sound(uid)
                             print(f"[INFO] Welcome message generated for {name} with UID {uid}.")
                             goodbye_dictionary = {}
                     elif t >= "17:45:00" and t < "23:59:59":
@@ -95,8 +93,7 @@ while True:
                         if exists is False:
                             print(f"[INFO] New UID detected: {uid}. Adding to dictionary.")
                             name = get_name(uid)
-                            path = generate_voice(uid)
-                            playsound(path)
+                            play_sound(uid)
                             print(f"[INFO] Goodbye message generated for {name} with UID {uid}.")
                             welcome_dictionary = {}
                 else:
