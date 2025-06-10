@@ -34,8 +34,16 @@ def generate_voice(uid):
         api_key=os.getenv("ELEVENLABS_API_KEY"),
         )
     
-    text = create_greeting(uid)
+    text, welcome = create_greeting(uid)
     name = get_name(uid)
+
+    if welcome:
+        path = f"./temp/{name}_welcome.mp3"
+    else:
+        path = f"./temp/{name}_goodbye.mp3"
+    if os.path.isfile(path):
+        print(f"[INFO] Audio file already exists for UID: {uid}, using existing file.")
+        return path
 
     print(f"[INFO] Generating voice for UID: {uid} with name: {name}")
 
@@ -48,8 +56,6 @@ def generate_voice(uid):
         text=text,
         model_id="eleven_multilingual_v2"
     )
-
-    path = f"./temp/{name}.mp3"
 
     # Save the audio content to a file
     with open(path, "wb") as f:
@@ -69,13 +75,16 @@ def create_greeting(uid):
     date, time = get_current_time()
 
     name = get_name(uid)
+    welcome = True
 
     if time > "08:45:00" and time < "17:45:00":
         greeting = f"Welcome, {name}!"
+        welcome = True
     elif time > "17:45:00" and time < "23:59:59":
         greeting = f"Goodbye, {name}!"
+        welcome = False
 
-    return greeting
+    return greeting, welcome
 
 def play_sound(uid):
     path = generate_voice(uid)
