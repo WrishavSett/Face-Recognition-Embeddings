@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from track import add_to_dictionary
 from insightface.app import FaceAnalysis
 from PIL import ImageFont, ImageDraw, Image
-from utils import get_name, generate_voice, get_current_time, play_sound
+from utils import get_name, get_current_time, play_sound
 
 load_dotenv()
 
