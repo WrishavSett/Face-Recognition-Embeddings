@@ -6,4 +6,6 @@ matplotlib
 onnxruntime
 #onnxruntime-gpu
 elevenlabs
-TTS
+playsound
+pinecone
+dotenv
