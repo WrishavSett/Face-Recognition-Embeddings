@@ -17,8 +17,8 @@ def main():
     USE_GPU = 0  # Use -1 for CPU
     SIMILARITY_THRESHOLD = 0.5
 
-    VIDEO_PATH = "./test.mp4"  # Path to your input video
-    OUTPUT_VIDEO_PATH = "./output.mp4"
+    VIDEO_PATH = "./helper/test.mp4"  # Path to your input video
+    OUTPUT_VIDEO_PATH = "./helper/output.mp4"
     CAMBRIA_FONT_PATH = "C:/Windows/Fonts/cambria.ttc"  # Adjust for your OS
 
     if not os.path.exists(VIDEO_PATH):
