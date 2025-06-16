@@ -29,13 +29,16 @@ def add_to_dictionary(dictionary, uid):
             'uid': uid,
             'name': name,
             'date': date,
-            'time': time
+            'time': time,
+            'last_seen': time
         }
         # print(f"[INFO] Added {name} with UID {uid} to the dictionary.")
         return False, dictionary
     
     else:
         # print(f"[INFO] {name} with UID {uid} already exists in the dictionary.")
+        existing_track_id, details = review_dictionary(dictionary, uid)
+        dictionary[existing_track_id]['last_seen'] = time
         return True, dictionary
 
 
