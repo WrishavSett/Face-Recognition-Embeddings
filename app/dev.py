@@ -102,7 +102,8 @@ while True:
                 label = "Unknown"
         except Exception as e:
             label = f"Error: {str(e)}"
-
+            print(f"[ERROR] Pinecone query failed: {e}")
+            
         color = (0, 255, 0) if label != "Unknown" else (0, 0, 255)
         cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
         cv2.putText(frame, label, (bbox[0], bbox[1] - 10),
