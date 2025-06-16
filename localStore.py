@@ -30,7 +30,7 @@ image_data_list = collect_image_paths(dataset_path)
 # -------------------------------------
 # Step 2: Face embedding using InsightFace
 # -------------------------------------
-app = FaceAnalysis(name='buffalo_l')
+app = FaceAnalysis(name='buffalo_s')
 app.prepare(ctx_id=0)  # Use -1 for CPU
 
 def extract_embedding(image_path):

@@ -44,7 +44,7 @@ def main():
 
     # Load model
     print("[INFO] Loading InsightFace model.")
-    app = FaceAnalysis(name='buffalo_l')
+    app = FaceAnalysis(name='buffalo_s')
     app.prepare(ctx_id=USE_GPU)
     print("[INFO] Model loaded.")
 
