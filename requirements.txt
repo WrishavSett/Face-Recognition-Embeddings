@@ -3,7 +3,8 @@ insightface
 pinecone
 numpy
 matplotlib
-onnxruntime
-#onnxruntime-gpu
+# onnxruntime
+# onnxruntime-gpu
+onnxruntime-silicon
 elevenlabs
-TTS
+playsound

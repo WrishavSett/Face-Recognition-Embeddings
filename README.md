@@ -13,9 +13,8 @@ face-recognition/
 ├── train.py                # Embedding extraction & indexing in Pinecone
 ├── infer.py                # Image-based face query
 ├── app/
-│   ├── final.py           # Full video-based recognition + greeting logic
+│   ├── app.py             # Full video-based recognition + greeting logic
 │   ├── headless.py        # Lightweight video processing (no audio)
-│   ├── kokoroVoice.py     # (Experimental) Kokoro TTS integration
 │   ├── main.py            # Real-time webcam recognition
 │   ├── test.py            # CLI: image-based UID+greeting
 │   ├── track.py           # UID detection and logging dictionary
@@ -50,7 +49,7 @@ Recommended Python: `>=3.8`
 - `insightface`
 - `pinecone-client`
 - `elevenlabs`
-- `onnxruntime` or `onnxruntime-gpu`
+- `onnxruntime` or `onnxruntime-gpu` or `onnxruntime-silicon`
 - `numpy`, `PIL`, `matplotlib`, `playsound`, `soundfile`
 
 ---
@@ -139,17 +138,6 @@ python app/main.py
 
 ---
 
-### 🎤 6. Kokoro Voice Synthesis (Optional)
-
-```bash
-python app/kokoroVoice.py
-```
-
-- Uses Kokoro open-weight TTS model to synthesize test audio
-- Experimental – not integrated with the main greeting system
-
----
-
 ## 🧠 Internals: How Greeting & Tracking Works
 
 - `track.py` maintains two dictionaries: `welcome_dictionary` and `goodbye_dictionary`
@@ -194,7 +182,7 @@ python app/main.py
 OR
 
 # Step 3: Process recorded video with complete time-based greeting logic
-python app/final.py
+python app/app.py
 ```
 
 ---
