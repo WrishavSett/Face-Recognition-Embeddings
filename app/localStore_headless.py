@@ -25,8 +25,8 @@ def normalize(vec):
     return vec / norm if norm > 0 else vec
 
 def main():
-    INDEX_PATH = "./face_index_cosine.faiss"
-    METADATA_PATH = "./face_metadata.json"
+    INDEX_PATH = "./faissIndex/face_index_cosine.faiss"
+    METADATA_PATH = "./faissIndex/face_metadata.json"
     VIDEO_PATH = "./helper/test.mp4"
     OUTPUT_VIDEO_PATH = "./helper/localSore_output.mp4"
     CAMBRIA_FONT_PATH = "C:/Windows/Fonts/cambria.ttc"  # Change path for non-Windows
