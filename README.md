@@ -1,10 +1,10 @@
-# 🧠 Face Recognition with Pinecone & Audio Greetings
+# Face Recognition with Pinecone & Audio Greetings
 
 A modular, real-time face recognition system using deep-learning embeddings (via InsightFace), Pinecone vector search, and personalized voice greetings with ElevenLabs. This project also includes attendance-like logging and time-aware greeting behavior.
 
 ---
 
-## 📁 Updated Project Structure
+## Project Structure
 
 ```plaintext
 face-recognition/
@@ -33,7 +33,7 @@ face-recognition/
 
 ---
 
-## ⚙️ Requirements & Installation
+## Requirements & Installation
 
 Install dependencies:
 
@@ -54,7 +54,7 @@ Recommended Python: `>=3.8`
 
 ---
 
-## 🔐 API Keys & Environment Variables
+## API Keys & Environment Variables
 
 **Create a `.env` file** at the root:
 
@@ -74,7 +74,7 @@ api_key = os.getenv("PINECONE_API_KEY")
 
 ---
 
-## 🚀 Core Functionality
+## Core Functionality
 
 ### 🔧 1. Train Embeddings
 
@@ -88,7 +88,7 @@ python train.py
 
 ---
 
-### 🖼️ 2. Query via Image (CLI)
+### 2. Query via Image (CLI)
 
 ```bash
 python app/test.py
@@ -100,45 +100,7 @@ python app/test.py
 
 ---
 
-### 🎥 3. Video File Recognition + Greeting
-
-```bash
-python app/final.py
-```
-
-- Loads a video from `helper/test.mp4`
-- Detects and identifies faces
-- Greets recognized users with time-aware messages
-- Logs their arrival and departure
-- Overlays bounding boxes and FPS
-- Saves output to `helper/output.mp4`
-
----
-
-### 🧪 4. Headless Inference (Lightweight)
-
-```bash
-python app/headless.py
-```
-
-- Same as `final.py` but skips audio generation
-- Good for quick face tracking in videos
-
----
-
-### 📸 5. Real-Time Webcam Recognition
-
-```bash
-python app/main.py
-```
-
-- Activates webcam (`cv2.VideoCapture(0)`)
-- Recognizes and labels faces on the fly
-- Press `q` to quit
-
----
-
-## 🧠 Internals: How Greeting & Tracking Works
+## Internals: How Greeting & Tracking Works
 
 - `track.py` maintains two dictionaries: `welcome_dictionary` and `goodbye_dictionary`
 - Each new UID is only greeted once per session
@@ -148,17 +110,7 @@ python app/main.py
 
 ---
 
-## ✅ Future Work
-
-- Replace hardcoded UID-to-name mapping with a database or CSV
-- Add a web-based dashboard with Flask/FastAPI
-- Enable registration of new users from UI
-- Add Docker support
-- Migrate to a secure secrets manager for API keys
-
----
-
-## 🧑‍💻 Developer Notes
+## Developer Notes
 
 - Models used: `insightface.buffalo_l` for embedding
 - Vector DB: [Pinecone](https://www.pinecone.io/)
@@ -167,7 +119,7 @@ python app/main.py
 
 ---
 
-## 🧪 Example Workflow
+## Example Workflow
 
 ```bash
 # Step 1: Train and index embeddings
@@ -187,7 +139,7 @@ python app/app.py
 
 ---
 
-## 📬 Contact
+## Contact
 
 Developed by [Wrishav Sett](https://github.com/WrishavSett)
 
