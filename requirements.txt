@@ -5,6 +5,6 @@ numpy
 matplotlib
 # onnxruntime
 # onnxruntime-gpu
-onnxruntime-silicon
+# onnxruntime-silicon
 elevenlabs
 playsound
