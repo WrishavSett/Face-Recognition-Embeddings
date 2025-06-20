@@ -10,7 +10,7 @@ import sys
 from dotenv import load_dotenv
 from PIL import ImageFont, ImageDraw, Image
 from insightface.app import FaceAnalysis
-from utils import get_name, get_current_time, play_sound
+from utils import get_name, get_current_time, play_sound, normalize, check_and_log_day_end
 from track import add_to_dictionary
 import faiss
 
@@ -99,36 +99,6 @@ if not cap.isOpened():
     raise IOError("[ERROR] Cannot open webcam.")
 print("[INFO] Webcam feed started. Press 'q' or 'Esc' to quit.")
 
-# --- Utility Functions ---
-def normalize(vec):
-    norm = np.linalg.norm(vec)
-    return vec / norm if norm > 0 else vec
-
-def write_log(uid, name, log_in, log_out):
-    file_exists = os.path.isfile(LOG_FILE)
-    with open(LOG_FILE, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        if not file_exists:
-            writer.writerow(['UID', 'Name', 'Login Time', 'Logout Time'])
-        writer.writerow([uid, name, log_in, log_out])
-    print(f"[INFO] Logged {uid}: {log_in} - {log_out}")
-
-def check_and_log_day_end():
-    print("[INFO] Running end-of-day logging.")
-    logged_uids = set()
-    for track_id, entry in welcome_dictionary.items():
-        uid = entry['uid']
-        name = entry['name']
-        log_in = entry['time']
-        logout_time = entry['last_seen']
-        for goodbye_entry in goodbye_dictionary.values():
-            if goodbye_entry['uid'] == uid:
-                logout_time = goodbye_entry['last_seen']
-                break
-        write_log(uid, name, log_in, logout_time)
-        logged_uids.add(uid)
-    print(f"[INFO] Logged {len(logged_uids)} users for logout.")
-
 # --- Main Loop ---
 try:
     while True:
@@ -141,7 +111,9 @@ try:
             day_end_logged = False
 
         if time_str == "01:00:00" and not day_end_logged:
-            check_and_log_day_end()
+            check_and_log_day_end(welcome_dictionary=welcome_dictionary,
+                                  goodbye_dictionary=goodbye_dictionary,
+                                  LOG_FILE=LOG_FILE)
             day_end_logged = True
 
         ret, frame = cap.read()

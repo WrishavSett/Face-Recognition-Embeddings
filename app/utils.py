@@ -1,4 +1,6 @@
 import os
+import csv
+import numpy as np
 from elevenlabs import ElevenLabs
 import datetime
 from dotenv import load_dotenv
@@ -94,3 +96,33 @@ def play_sound(uid):
     except Exception as e:
         print(f"[ERROR] Failed to play sound: {e}")
         raise e
+    
+# --- Utility Functions ---
+def normalize(vec):
+    norm = np.linalg.norm(vec)
+    return vec / norm if norm > 0 else vec
+
+def write_log(uid, name, log_in, log_out, LOG_FILE):
+    file_exists = os.path.isfile(LOG_FILE)
+    with open(LOG_FILE, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(['UID', 'Name', 'Login Time', 'Logout Time'])
+        writer.writerow([uid, name, log_in, log_out])
+    print(f"[INFO] Logged {uid}: {log_in} - {log_out}")
+
+def check_and_log_day_end(welcome_dictionary, goodbye_dictionary, LOG_FILE):
+    print("[INFO] Running end-of-day logging.")
+    logged_uids = set()
+    for track_id, entry in welcome_dictionary.items():
+        uid = entry['uid']
+        name = entry['name']
+        log_in = entry['time']
+        logout_time = entry['last_seen']
+        for goodbye_entry in goodbye_dictionary.values():
+            if goodbye_entry['uid'] == uid:
+                logout_time = goodbye_entry['last_seen']
+                break
+        write_log(uid, name, log_in, logout_time, LOG_FILE)
+        logged_uids.add(uid)
+    print(f"[INFO] Logged {len(logged_uids)} users for logout.")
