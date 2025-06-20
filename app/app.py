@@ -14,6 +14,10 @@ from utils import get_name, get_current_time, play_sound, normalize, check_and_l
 from track import add_to_dictionary
 import faiss
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="onnxruntime")
+warnings.filterwarnings("ignore", category=FutureWarning, module="insightface")
+
 # --- Platform-specific keypress handler ---
 if platform.system() == 'Windows':
     import msvcrt
@@ -170,7 +174,7 @@ try:
         if not args.headless:
             cv2.imshow("Webcam Face Recognition (Local)", frame)
             if cv2.waitKey(1) & 0xFF in [ord('q'), 27]:
-                print("[INFO] Exit key pressed. Terminating...")
+                print("[INFO] Exit key pressed. Terminating.")
                 break
         else:
             if check_keypress():
