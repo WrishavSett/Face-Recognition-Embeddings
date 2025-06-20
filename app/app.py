@@ -1,124 +1,216 @@
 import os
 import cv2
 import time
+import json
+import csv
+import argparse
 import numpy as np
-from pinecone import Pinecone
+import platform
+import sys
 from dotenv import load_dotenv
-from track import add_to_dictionary # Assuming 'track.py' is in the same directory
-from insightface.app import FaceAnalysis
 from PIL import ImageFont, ImageDraw, Image
-from utils import get_name, get_current_time, play_sound # Assuming 'utils.py' is in the same directory
+from insightface.app import FaceAnalysis
+from utils import get_name, get_current_time, play_sound
+from track import add_to_dictionary
+import faiss
+
+# --- Platform-specific keypress handler ---
+if platform.system() == 'Windows':
+    import msvcrt
+    def check_keypress():
+        if msvcrt.kbhit():
+            key = msvcrt.getch()
+            if key in [b'q', b'\x1b']:  # 'q' or Esc
+                return True
+        return False
+else:
+    import select
+    import termios
+    import tty
+    def check_keypress():
+        dr, _, _ = select.select([sys.stdin], [], [], 0)
+        if dr:
+            key = sys.stdin.read(1)
+            if key in ['q', '\x1b']:  # 'q' or Esc
+                return True
+        return False
+
+# --- Argument Parser ---
+parser = argparse.ArgumentParser(description="Face Recognition Attendance System")
+parser.add_argument("--headless", action="store_true", help="Run without displaying the webcam feed")
+parser.add_argument("--faissgpu", action="store_true", help="Enable FAISS GPU acceleration if available")
+args = parser.parse_args()
+
+# Terminal setup for Unix-like systems
+if not platform.system() == 'Windows' and args.headless:
+    orig_settings = termios.tcgetattr(sys.stdin)
+    tty.setcbreak(sys.stdin)
 
 load_dotenv()
 
 # --- Configuration ---
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_REGION = "us-east-1"
-INDEX_NAME = "aiml-da-face-embeds"
-TOP_K = 1
-USE_GPU = 0  # Use -1 for CPU
-SIMILARITY_THRESHOLD = 0.5
+INDEX_PATH = "./faissIndex/face_index_cosine.faiss"
+METADATA_PATH = "./faissIndex/face_metadata.json"
+CAMBRIA_FONT_PATH = "./helper/cambria.ttc"
+LOG_FILE = "./log/attendance_log.csv"
 
-# Dictionaries to track greetings
+TOP_K = 1
+SIMILARITY_THRESHOLD = 0.5
+USE_GPU = 0  # InsightFace: use -1 for CPU, 0 for GPU
+
 welcome_dictionary = {}
 goodbye_dictionary = {}
+day_end_logged = False
 
-# Font for displaying text (ensure it's accessible)
-CAMBRIA_FONT_PATH = "./helper/cambria.ttc"  # Adjust for your OS
-
+# --- Font Setup ---
 if not os.path.exists(CAMBRIA_FONT_PATH):
     raise FileNotFoundError(f"[ERROR] Cambria font file not found: {CAMBRIA_FONT_PATH}")
+font = ImageFont.truetype(CAMBRIA_FONT_PATH, 24)
 
-font_size = 24
-font = ImageFont.truetype(CAMBRIA_FONT_PATH, font_size)
+# --- Load FAISS + Metadata ---
+if not os.path.exists(INDEX_PATH) or not os.path.exists(METADATA_PATH):
+    raise FileNotFoundError("[ERROR] FAISS index or metadata file not found.")
 
-# --- Model and Pinecone Initialization ---
+print("[INFO] Loading FAISS index and metadata.")
+faiss_index = faiss.read_index(INDEX_PATH)
+
+if args.faissgpu:
+    try:
+        res = faiss.StandardGpuResources()
+        faiss_index = faiss.index_cpu_to_gpu(res, 0, faiss_index)
+        print("[INFO] FAISS GPU enabled.")
+    except Exception as e:
+        print(f"[WARNING] FAISS GPU not available or failed to initialize. Falling back to CPU. Error: {e}")
+
+with open(METADATA_PATH, "r") as f:
+    metadata = json.load(f)
+vector_ids = list(metadata.keys())
+print("[INFO] FAISS and metadata loaded.")
+
+# --- Load Face Detection Model ---
 print("[INFO] Loading face embedding model.")
 facemodel = FaceAnalysis(name='buffalo_l')
 facemodel.prepare(ctx_id=USE_GPU)
 print("[INFO] Model loaded.")
 
-print("[INFO] Connecting to Pinecone.")
-pc = Pinecone(api_key=PINECONE_API_KEY)
-index = pc.Index(INDEX_NAME)
-print("[INFO] Connected to Pinecone.")
-
 # --- Webcam Setup ---
-# Use 0 for default webcam, or change to a different number if you have multiple webcams
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
-    raise IOError("[ERROR] Cannot open webcam. Make sure it's connected and not in use.")
+    raise IOError("[ERROR] Cannot open webcam.")
+print("[INFO] Webcam feed started. Press 'q' or 'Esc' to quit.")
 
-print("[INFO] Starting webcam feed. Press 'q' to quit.")
+# --- Utility Functions ---
+def normalize(vec):
+    norm = np.linalg.norm(vec)
+    return vec / norm if norm > 0 else vec
 
-# --- Real-time Processing Loop ---
-while True:
-    start_time = time.time()
-    d, t = get_current_time()
+def write_log(uid, name, log_in, log_out):
+    file_exists = os.path.isfile(LOG_FILE)
+    with open(LOG_FILE, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(['UID', 'Name', 'Login Time', 'Logout Time'])
+        writer.writerow([uid, name, log_in, log_out])
+    print(f"[INFO] Logged {uid}: {log_in} - {log_out}")
 
-    ret, frame = cap.read()
-    if not ret:
-        print("[INFO] Failed to read frame from webcam.")
-        break
+def check_and_log_day_end():
+    print("[INFO] Running end-of-day logging.")
+    logged_uids = set()
+    for track_id, entry in welcome_dictionary.items():
+        uid = entry['uid']
+        name = entry['name']
+        log_in = entry['time']
+        logout_time = entry['last_seen']
+        for goodbye_entry in goodbye_dictionary.values():
+            if goodbye_entry['uid'] == uid:
+                logout_time = goodbye_entry['last_seen']
+                break
+        write_log(uid, name, log_in, logout_time)
+        logged_uids.add(uid)
+    print(f"[INFO] Logged {len(logged_uids)} users for logout.")
 
-    img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    faces = facemodel.get(img_rgb)
+# --- Main Loop ---
+try:
+    while True:
+        date_str, time_str = get_current_time()
 
-    for face in faces:
-        bbox = face.bbox.astype(int)
-        embedding = face.embedding.tolist()
+        if time_str == "06:00:00":
+            print("[INFO] Resetting tracking dictionaries at 06:00.")
+            welcome_dictionary.clear()
+            goodbye_dictionary.clear()
+            day_end_logged = False
 
-        try:
-            results = index.query(vector=embedding, top_k=TOP_K, include_metadata=True)
-            if results.matches:
-                top_match = results.matches[0]
-                score = top_match.score
-                if score >= SIMILARITY_THRESHOLD:
-                    uid = top_match.metadata.get('uid', 'Unknown')
-                    label = f"{uid} ({score:.2f})"
-                    if t >= "08:45:00" and t < "17:45:00":
+        if time_str == "01:00:00" and not day_end_logged:
+            check_and_log_day_end()
+            day_end_logged = True
+
+        ret, frame = cap.read()
+        if not ret:
+            print("[INFO] Failed to read frame from webcam.")
+            break
+
+        img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        faces = facemodel.get(img_rgb)
+
+        for face in faces:
+            bbox = face.bbox.astype(int)
+            embedding = normalize(face.embedding.astype("float32")).reshape(1, -1)
+
+            try:
+                scores, indices = faiss_index.search(embedding, TOP_K)
+                best_score = float(scores[0][0])
+                best_idx = int(indices[0][0])
+
+                if best_score >= SIMILARITY_THRESHOLD:
+                    vector_id = vector_ids[best_idx]
+                    meta = metadata.get(vector_id, {})
+                    uid = meta.get("uid", "Unknown")
+                    label = f"{uid} ({best_score:.2f})"
+
+                    if "08:45:00" <= time_str < "17:45:00":
                         exists, welcome_dictionary = add_to_dictionary(welcome_dictionary, uid)
-                        if exists is False:
-                            print(f"[INFO] New UID detected: {uid}. Adding to welcome dictionary.")
+                        if not exists:
                             name = get_name(uid)
                             play_sound(uid)
-                            print(f"[INFO] Welcome message generated for {name} with UID {uid}.")
-                            goodbye_dictionary = {} # Reset goodbye if person just arrived
-                    elif t >= "17:45:00" and t < "23:59:59":
+                            print(f"[INFO] Welcome recorded for {name}")
+                            goodbye_dictionary.clear()
+                    elif "17:45:00" <= time_str < "23:59:59":
                         exists, goodbye_dictionary = add_to_dictionary(goodbye_dictionary, uid)
-                        if exists is False:
-                            print(f"[INFO] New UID detected: {uid}. Adding to goodbye dictionary.")
+                        if not exists:
                             name = get_name(uid)
                             play_sound(uid)
-                            print(f"[INFO] Goodbye message generated for {name} with UID {uid}.")
-                            welcome_dictionary = {} # Reset welcome if person just left
+                            print(f"[INFO] Goodbye recorded for {name}")
+                            welcome_dictionary.clear()
                 else:
                     label = "Unknown"
-            else:
-                label = "Unknown"
-        except Exception as e:
-            label = f"Error: {str(e)}"
-            print(f"[ERROR] Pinecone query failed: {e}")
 
-        color = (0, 255, 0) if label != "Unknown" else (0, 0, 255)
-        cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
-        
-        # Draw label using PIL for custom font
-        frame_pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        draw = ImageDraw.Draw(frame_pil)
-        draw.text((bbox[0], bbox[1] - font_size - 5), label, font=font, fill=color) # Adjusted position
-        frame = cv2.cvtColor(np.array(frame_pil), cv2.COLOR_RGB2BGR)
+            except Exception as e:
+                label = f"Error: {str(e)}"
+                print(f"[ERROR] FAISS query failed: {e}")
 
-    # Display the frame
-    cv2.imshow('Webcam Face Recognition', frame)
+            color = (0, 255, 0) if label != "Unknown" else (0, 0, 255)
+            frame_pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            draw = ImageDraw.Draw(frame_pil)
+            draw.text((bbox[0], bbox[1] - 30), label, font=font, fill=color)
+            frame = cv2.cvtColor(np.array(frame_pil), cv2.COLOR_RGB2BGR)
+            cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
 
-    # Break the loop if 'q' is pressed
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+        if not args.headless:
+            cv2.imshow("Webcam Face Recognition (Local)", frame)
+            if cv2.waitKey(1) & 0xFF in [ord('q'), 27]:
+                print("[INFO] Exit key pressed. Terminating...")
+                break
+        else:
+            if check_keypress():
+                print("[INFO] Exit key pressed (headless mode). Terminating.")
+                break
 
-# --- Cleanup ---
-cap.release()
-cv2.destroyAllWindows()
-print(f"[INFO] Welcome entries: {welcome_dictionary}")
-print(f"[INFO] Goodbye entries: {goodbye_dictionary}")
-print("[INFO] Processing complete. Exiting.")
+finally:
+    if not platform.system() == 'Windows' and args.headless:
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
+
+    cap.release()
+    cv2.destroyAllWindows()
+    print(f"[INFO] Welcome entries: {welcome_dictionary}")
+    print(f"[INFO] Goodbye entries: {goodbye_dictionary}")
+    print("[INFO] Exiting application.")
