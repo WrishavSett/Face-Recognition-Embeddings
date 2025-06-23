@@ -1,17 +1,18 @@
 [face-recognition]
     .gitignore
-    directory_structure.txt
     infer.py
     README.md
     requirements.txt
     setup.py
     train.py
+    localStore.py
     [.env]
     [app]
         app.py
         main.py
         test.py
         utils.py
+        track.py
     [datasets]
         [AIML and DA]
             [test]
@@ -35,5 +36,8 @@
     [helper]
         cambria.ttc
         test.mp4
+    [log]
+        attendance_log.csv
     [temp]
-        Wrishav Sett.mp3
+        Wrishav Sett_goodbye.mp3
+        Wrishav Sett_welcome.mp3
